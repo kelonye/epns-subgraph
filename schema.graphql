@@ -1,0 +1,42 @@
+type Channel @entity {
+  id: ID!
+  # ipfs
+  name: String!
+  info: String!
+  url: String!
+  icon: String!
+  # contract
+  type: BigInt!
+  deactivated: Boolean!
+  poolContribution: BigInt!
+  memberCount: BigInt!
+  historicalZ: BigInt!
+  fairShareCount: BigInt!
+  lastUpdateBlock: BigInt! # 🤔 same as updateBlock
+  startBlock: BigInt!
+  updateBlock: BigInt!
+  weight: BigInt!
+}
+
+type SubscriptionState @entity {
+  id: ID! # channelAddress + userAddress
+  userAddress: Bytes! # address
+  channelAddress: Bytes! # address
+  subscribed: Boolean!
+}
+
+type Notification @entity {
+  id: ID!
+  userAddress: Bytes! # address
+  channelAddress: Bytes! # address
+  notificationTitle: String!
+  notificationBody: String!
+  dataType: String!
+  dataSecret: String!
+  dataASub: String!
+  dataAMsg: String!
+  dataACta: String!
+  dataAImg: String!
+  dataATime: String!
+  recipients: [Bytes!]! # [address]
+}
