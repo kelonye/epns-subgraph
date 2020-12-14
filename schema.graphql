@@ -1,10 +1,10 @@
 type Channel @entity {
   id: ID!
   # ipfs
-  name: String!
-  info: String!
-  url: String!
-  icon: String!
+  name: String
+  info: String
+  url: String
+  icon: String
   # contract
   type: BigInt!
   deactivated: Boolean!
@@ -29,14 +29,14 @@ type Notification @entity {
   id: ID!
   userAddress: Bytes! # address
   channelAddress: Bytes! # address
-  notificationTitle: String!
-  notificationBody: String!
-  dataType: String!
-  dataSecret: String!
-  dataASub: String!
-  dataAMsg: String!
-  dataACta: String!
-  dataAImg: String!
-  dataATime: String!
-  recipients: [Bytes!]! # [address]
+  notificationTitle: String
+  notificationBody: String
+  dataType: String
+  dataSecret: String
+  dataASub: String
+  dataAMsg: String
+  dataACta: String
+  dataAImg: String
+  dataATime: String
+  recipients: [Bytes!] # [address]
 }

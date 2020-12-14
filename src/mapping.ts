@@ -32,19 +32,30 @@ export function handleAddChannel(event: AddChannel): void {
     ])
   }
 
-  let contract = Contract.bind(event.address)
-  let c = contract.channels(event.params.channel)
+  // let contract = Contract.bind(event.address)
+  // let c = contract.channels(event.params.channel)
 
-  channel.type = c.value0 as BigInt
-  channel.deactivated = false // c.value1
-  channel.poolContribution = c.value2.toI32() as BigInt
-  channel.memberCount = c.value3.toI32() as BigInt
-  channel.historicalZ = c.value4.toI32() as BigInt
-  channel.fairShareCount = c.value5.toI32() as BigInt
-  channel.lastUpdateBlock = c.value6.toI32() as BigInt
-  channel.startBlock = c.value7.toI32() as BigInt
-  channel.updateBlock = c.value8.toI32() as BigInt
-  channel.weight = c.value9.toI32() as BigInt
+  // channel.type = c.value0 as BigInt
+  // channel.deactivated = false // c.value1
+  // channel.poolContribution = c.value2.toI32() as BigInt
+  // channel.memberCount = c.value3.toI32() as BigInt
+  // channel.historicalZ = c.value4.toI32() as BigInt
+  // channel.fairShareCount = c.value5.toI32() as BigInt
+  // channel.lastUpdateBlock = c.value6.toI32() as BigInt
+  // channel.startBlock = c.value7.toI32() as BigInt
+  // channel.updateBlock = c.value8.toI32() as BigInt
+  // channel.weight = c.value9.toI32() as BigInt
+
+  channel.type = new BigInt(0)
+  channel.deactivated = false
+  channel.poolContribution = new BigInt(0)
+  channel.memberCount = new BigInt(0)
+  channel.historicalZ = new BigInt(0)
+  channel.fairShareCount = new BigInt(0)
+  channel.lastUpdateBlock = new BigInt(0)
+  channel.startBlock = new BigInt(0)
+  channel.updateBlock = new BigInt(0)
+  channel.weight = new BigInt(0)
 
   channel.save()
 }
@@ -64,8 +75,8 @@ export function handleUpdateChannel(event: UpdateChannel): void {
     channel.icon = ipfsObject.get('icon').toString()
   }
 
-  let contract = Contract.bind(event.address)
-  let c = contract.channels(event.params.channel)
+  // let contract = Contract.bind(event.address)
+  // let c = contract.channels(event.params.channel)
 
   // channel.poolContribution = c.value2.toI32() as BigInt
   // channel.memberCount = c.value3.toI32() as BigInt
@@ -73,7 +84,7 @@ export function handleUpdateChannel(event: UpdateChannel): void {
   // channel.fairShareCount = c.value5.toI32() as BigInt
   // channel.lastUpdateBlock = c.value6.toI32() as BigInt
   // channel.startBlock = c.value7.toI32() as BigInt
-  channel.updateBlock = c.value8.toI32() as BigInt
+  // channel.updateBlock = c.value8.toI32() as BigInt
   // channel.weight = c.value9.toI32() as BigInt
 
   channel.save()
@@ -124,17 +135,35 @@ export function handleSendNotification(event: SendNotification): void {
   let result = ipfs.cat(getIpfsId(event.params.identity))!
   if (result) {
     let ipfsObject = json.fromBytes(result).toObject()
+
     let n = ipfsObject.get('notification').toObject()
-    let d = ipfsObject.get('data').toObject()
     notification.notificationTitle = n.get('title').toString()
     notification.notificationBody = n.get('body').toString()
-    notification.dataType = d.get('type').toString()
-    notification.dataSecret = d.get('secret').toString()
-    notification.dataASub = d.get('asub').toString()
-    notification.dataAMsg = d.get('amsg').toString()
-    notification.dataACta = d.get('acta').toString()
-    notification.dataAImg = d.get('aimg').toString()
-    notification.dataATime = d.get('atime').toString()
+
+    let dValue = ipfsObject.get('data')
+    if (dValue !== null) {
+      let d = dValue.toObject()
+      let asub = d.get('asub')
+      if (asub !== null) {
+        notification.dataASub = asub.toString()
+      }
+      let amsg = d.get('amsg')
+      if (amsg !== null) {
+        notification.dataAMsg = amsg.toString()
+      }
+      let acta = d.get('acta')
+      if (acta !== null) {
+        notification.dataACta = acta.toString()
+      }
+      let aimg = d.get('aimg')
+      if (aimg !== null) {
+        notification.dataAImg = aimg.toString()
+      }
+      let atime = d.get('atime')
+      if (atime !== null) {
+        notification.dataATime = atime.toString()
+      }
+    }
   } else {
     log.warning('notification identity not found in ipfs {}', [
       event.params.identity.toString(),
