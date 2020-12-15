@@ -1,12 +1,12 @@
 build:
 	@yarn $@
 
-deploy:
-	@ln -sf $(PWD)/subgraph.production.yaml $(PWD)/subgraph.yaml
+deploy-production:
+	@yarn link-production
 	@yarn $@
 
 deploy-staging:
-	@ln -sf $(PWD)/subgraph.staging.yaml $(PWD)/subgraph.yaml
+	@yarn link-staging
 	@yarn $@
 
 cg:

@@ -4,8 +4,10 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://ipfs.infura.io:5001 vbstreetz/epns",
-    "deploy-staging": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://ipfs.infura.io:5001 vbstreetz/epns-staging"
+    "deploy-production": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://ipfs.infura.io:5001 vbstreetz/epns",
+    "deploy-staging": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://ipfs.infura.io:5001 vbstreetz/epns-staging",
+    "link-production": "ln -sf ./subgraph.production.yaml $PWD/subgraph.yaml",
+    "link-staging": "ln -sf ./subgraph.staging.yaml $PWD/subgraph.yaml"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.19.0",
