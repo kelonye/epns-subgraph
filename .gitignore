@@ -3,3 +3,4 @@ node_modules
 yarn.lock
 generated
 build
+subgraph.yaml

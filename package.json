@@ -1,13 +1,11 @@
 {
   "name": "epns-subgraph",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ vbstreetz/epns",
-    "create-local": "graph create --node http://localhost:8020/ vbstreetz/epns",
-    "remove-local": "graph remove --node http://localhost:8020/ vbstreetz/epns",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 vbstreetz/epns"
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://ipfs.infura.io:5001 vbstreetz/epns",
+    "deploy-staging": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://ipfs.infura.io:5001 vbstreetz/epns-staging"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.19.0",

@@ -63,7 +63,7 @@ export function handleAddChannel(event: AddChannel): void {
 export function handleUpdateChannel(event: UpdateChannel): void {
   let channel = Channel.load(event.params.channel.toHex())
   if (channel === null) {
-    log.error('unknown channel {}', [event.params.channel.toHex()])
+    log.warning('unknown channel {}', [event.params.channel.toHex()])
     return
   }
   let result = ipfs.cat(event.params.identity.toString().split('+')[0])!
@@ -105,6 +105,22 @@ export function handleSubscribe(event: Subscribe): void {
   }
   subscription.subscribed = true
   subscription.save()
+
+  let channel = Channel.load(event.params.channel.toHex())
+  if (channel === null) {
+    log.warning('unknown channel {}', [event.params.channel.toHex()])
+    return
+  }
+
+  let contract = Contract.bind(event.address)
+  let c = contract.try_channels(event.params.channel)
+  if (c.reverted) {
+    log.warning('.channels reverted', [])
+  } else {
+    channel.memberCount = c.value.value3
+  }
+
+  channel.save()
 }
 
 export function handleUnsubscribe(event: Unsubscribe): void {
@@ -120,6 +136,22 @@ export function handleUnsubscribe(event: Unsubscribe): void {
   }
   subscription.subscribed = false
   subscription.save()
+
+  let channel = Channel.load(event.params.channel.toHex())
+  if (channel === null) {
+    log.warning('unknown channel {}', [event.params.channel.toHex()])
+    return
+  }
+
+  let contract = Contract.bind(event.address)
+  let c = contract.try_channels(event.params.channel)
+  if (c.reverted) {
+    log.warning('.channels reverted', [])
+  } else {
+    channel.memberCount = c.value.value3
+  }
+
+  channel.save()
 }
 
 function getSubscriptionStateId(channel: string, user: string): string {
@@ -181,7 +213,7 @@ function getIpfsId(s: Bytes): string {
 export function handleDeactivateChannel(event: DeactivateChannel): void {
   let channel = Channel.load(event.params.channel.toHex())
   if (channel === null) {
-    log.error('unknown channel {}', [event.params.channel.toHex()])
+    log.warning('unknown channel {}', [event.params.channel.toHex()])
     return
   }
   channel.deactivated = true
