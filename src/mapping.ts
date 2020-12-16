@@ -161,7 +161,7 @@ function getSubscriptionStateId(channel: string, user: string): string {
 // notification
 
 export function handleSendNotification(event: SendNotification): void {
-  let notification = new Notification(event.transaction.from.toHex())
+  let notification = new Notification(event.params.identity.toHex())
   notification.channelAddress = event.params.channel
   notification.userAddress = event.params.recipient
   let result = ipfs.cat(getIpfsId(event.params.identity))!
