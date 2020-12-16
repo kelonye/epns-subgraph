@@ -1,4 +1,11 @@
-import {BigInt, Bytes, ipfs, json, log} from '@graphprotocol/graph-ts'
+import {
+  BigInt,
+  Bytes,
+  ipfs,
+  json,
+  JSONValueKind,
+  log,
+} from '@graphprotocol/graph-ts'
 import {
   Contract,
   AddChannel,
@@ -171,14 +178,14 @@ function getSubscriptionStateId(channel: string, user: string): string {
 // notification
 
 export function handleSendNotification(event: SendNotification): void {
-  let type: string,
-    title: string,
-    body: string,
-    asub: string,
-    amsg: string,
-    acta: string,
-    aimg: string,
-    atime: string
+  let type: string = '',
+    title: string = '',
+    body: string = '',
+    asub: string = '',
+    amsg: string = '',
+    acta: string = '',
+    aimg: string = '',
+    atime: string = ''
 
   let channelAddress = event.params.channel
   let identity = event.params.identity
@@ -188,8 +195,14 @@ export function handleSendNotification(event: SendNotification): void {
     let ipfsObject = json.fromBytes(result).toObject()
     let n = ipfsObject.get('notification').toObject()
 
-    title = n.get('title').toString()
-    body = n.get('body').toString()
+    let nTitle = n.get('title')
+    if (nTitle !== null) {
+      title = nTitle.toString()
+    }
+    let nBody = n.get('body')
+    if (nBody !== null) {
+      body = nBody.toString()
+    }
 
     let dValue = ipfsObject.get('data')
     if (dValue !== null) {
@@ -197,7 +210,14 @@ export function handleSendNotification(event: SendNotification): void {
 
       let dataType = d.get('type')
       if (dataType !== null) {
-        type = dataType.toString()
+        if (dataType.kind === JSONValueKind.STRING) {
+          type = dataType.toString()
+        } else {
+          log.warning('notification kind {} for {}', [
+            dataType.kind.toString(),
+            identity.toString(),
+          ])
+        }
       }
       let dataASub = d.get('asub')
       if (dataASub !== null) {
@@ -222,18 +242,25 @@ export function handleSendNotification(event: SendNotification): void {
     }
   } else {
     log.warning('notification identity not found in ipfs {}', [
-      event.params.identity.toString(),
+      identity.toString(),
     ])
   }
 
-  if (type == '1') {
+  log.warning('found notification of type {} {}', [type, identity.toString()])
+
+  if (type.includes('1')) {
+    // type === 1 // falsy for some reason
+    log.warning('indexing broadcast notification {} {}', [
+      type,
+      identity.toString(),
+    ])
     let contract = Contract.bind(event.address)
     let c = contract.try_usersCount()
     if (c.reverted) {
       log.warning('.usersCount reverted', [])
     } else {
       for (let i = 0; i < c.value.toI32(); i++) {
-        let d = contract.try_mapAddressUsers(new BigInt(i))
+        let d = contract.try_mapAddressUsers(BigInt.fromI32(i))
         if (d.reverted) {
           log.warning('.mapAddressUsers reverted %s', [i.toString()])
         } else {
@@ -244,13 +271,20 @@ export function handleSendNotification(event: SendNotification): void {
           )
           let subscription = SubscriptionState.load(subscriptionId)
           if (subscription == null) {
-            // log.warning('subscription is null {}', [subscriptionId])
+            // log.warning('subscription is null {} {}', [
+            //   i.toString(),
+            //   subscriptionId,
+            // ])
           } else if (!subscription.subscribed) {
-            // log.warning('subscription is not subscribed {}', [subscriptionId])
+            // log.warning('subscription is not subscribed {} {}', [
+            //   i.toString(),
+            //   subscriptionId,
+            // ])
           } else {
-            log.warning('create notification for: {} {}', [
+            log.warning('create notification for: {} {} {}', [
+              i.toString(),
               subscriptionId,
-              identity.toHexString(),
+              identity.toString(),
             ])
             createNotification(
               identity,
@@ -269,8 +303,12 @@ export function handleSendNotification(event: SendNotification): void {
       }
     }
   } else {
+    log.warning('indexing single notification {} {}', [
+      type,
+      identity.toString(),
+    ])
     createNotification(
-      event.params.identity,
+      identity,
       channelAddress,
       event.params.recipient,
       title,
@@ -298,7 +336,7 @@ function createNotification(
 ): void {
   let notification = new Notification(
     identity
-      .toHexString()
+      .toString()
       .concat('+')
       .concat(channelAddress.toHexString())
       .concat('+')
