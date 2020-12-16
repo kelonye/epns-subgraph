@@ -171,39 +171,53 @@ function getSubscriptionStateId(channel: string, user: string): string {
 // notification
 
 export function handleSendNotification(event: SendNotification): void {
-  let notification = new Notification(event.params.identity.toHex())
-  notification.channelAddress = event.params.channel
-  notification.userAddress = event.params.recipient
-  let result = ipfs.cat(getIpfsId(event.params.identity))!
+  let type: string,
+    title: string,
+    body: string,
+    asub: string,
+    amsg: string,
+    acta: string,
+    aimg: string,
+    atime: string
+
+  let channelAddress = event.params.channel
+  let identity = event.params.identity
+
+  let result = ipfs.cat(getIpfsId(identity))!
   if (result) {
     let ipfsObject = json.fromBytes(result).toObject()
-
     let n = ipfsObject.get('notification').toObject()
-    notification.notificationTitle = n.get('title').toString()
-    notification.notificationBody = n.get('body').toString()
+
+    title = n.get('title').toString()
+    body = n.get('body').toString()
 
     let dValue = ipfsObject.get('data')
     if (dValue !== null) {
       let d = dValue.toObject()
-      let asub = d.get('asub')
-      if (asub !== null) {
-        notification.dataASub = asub.toString()
+
+      let dataType = d.get('type')
+      if (dataType !== null) {
+        type = dataType.toString()
       }
-      let amsg = d.get('amsg')
-      if (amsg !== null) {
-        notification.dataAMsg = amsg.toString()
+      let dataASub = d.get('asub')
+      if (dataASub !== null) {
+        asub = dataASub.toString()
       }
-      let acta = d.get('acta')
-      if (acta !== null) {
-        notification.dataACta = acta.toString()
+      let dataAMsg = d.get('amsg')
+      if (dataAMsg !== null) {
+        amsg = dataAMsg.toString()
       }
-      let aimg = d.get('aimg')
-      if (aimg !== null) {
-        notification.dataAImg = aimg.toString()
+      let dataACta = d.get('acta')
+      if (dataACta !== null) {
+        acta = dataACta.toString()
       }
-      let atime = d.get('atime')
-      if (atime !== null) {
-        notification.dataATime = atime.toString()
+      let dataAImg = d.get('aimg')
+      if (dataAImg !== null) {
+        aimg = dataAImg.toString()
+      }
+      let dataATime = d.get('atime')
+      if (dataATime !== null) {
+        atime = dataATime.toString()
       }
     }
   } else {
@@ -211,6 +225,96 @@ export function handleSendNotification(event: SendNotification): void {
       event.params.identity.toString(),
     ])
   }
+
+  if (type == '1') {
+    let contract = Contract.bind(event.address)
+    let c = contract.try_usersCount()
+    if (c.reverted) {
+      log.warning('.usersCount reverted', [])
+    } else {
+      for (let i = 0; i < c.value.toI32(); i++) {
+        let d = contract.try_mapAddressUsers(new BigInt(i))
+        if (d.reverted) {
+          log.warning('.mapAddressUsers reverted %s', [i.toString()])
+        } else {
+          let userAddress = d.value
+          let subscriptionId = getSubscriptionStateId(
+            channelAddress.toHexString(),
+            userAddress.toHexString()
+          )
+          let subscription = SubscriptionState.load(subscriptionId)
+          if (subscription == null) {
+            // log.warning('subscription is null {}', [subscriptionId])
+          } else if (!subscription.subscribed) {
+            // log.warning('subscription is not subscribed {}', [subscriptionId])
+          } else {
+            log.warning('create notification for: {} {}', [
+              subscriptionId,
+              identity.toHexString(),
+            ])
+            createNotification(
+              identity,
+              channelAddress,
+              userAddress,
+              title,
+              body,
+              asub,
+              amsg,
+              acta,
+              aimg,
+              atime
+            )
+          }
+        }
+      }
+    }
+  } else {
+    createNotification(
+      event.params.identity,
+      channelAddress,
+      event.params.recipient,
+      title,
+      body,
+      asub,
+      amsg,
+      acta,
+      aimg,
+      atime
+    )
+  }
+}
+
+function createNotification(
+  identity: Bytes,
+  channelAddress: Bytes,
+  userAddress: Bytes,
+  title: string,
+  body: string,
+  asub: string,
+  amsg: string,
+  acta: string,
+  aimg: string,
+  atime: string
+): void {
+  let notification = new Notification(
+    identity
+      .toHexString()
+      .concat('+')
+      .concat(channelAddress.toHexString())
+      .concat('+')
+      .concat(userAddress.toHexString())
+  )
+  notification.channelAddress = channelAddress
+  notification.userAddress = userAddress
+
+  notification.notificationTitle = title
+  notification.notificationBody = body
+  notification.dataASub = asub
+  notification.dataAMsg = amsg
+  notification.dataACta = acta
+  notification.dataAImg = aimg
+  notification.dataATime = atime
+
   notification.save()
 }
 

@@ -14,5 +14,6 @@ cg:
 
 .PHONY: \
 	build \
-	deploy \
+	deploy-staging \
+	deploy-production \
 	cg
