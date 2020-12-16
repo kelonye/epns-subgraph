@@ -90,6 +90,16 @@ export function handleUpdateChannel(event: UpdateChannel): void {
   channel.save()
 }
 
+export function handleDeactivateChannel(event: DeactivateChannel): void {
+  let channel = Channel.load(event.params.channel.toHex())
+  if (channel === null) {
+    log.warning('unknown channel {}', [event.params.channel.toHex()])
+    return
+  }
+  channel.deactivated = true
+  channel.save()
+}
+
 // subscription
 
 export function handleSubscribe(event: Subscribe): void {
@@ -209,16 +219,6 @@ function getIpfsId(s: Bytes): string {
 }
 
 //
-
-export function handleDeactivateChannel(event: DeactivateChannel): void {
-  let channel = Channel.load(event.params.channel.toHex())
-  if (channel === null) {
-    log.warning('unknown channel {}', [event.params.channel.toHex()])
-    return
-  }
-  channel.deactivated = true
-  channel.save()
-}
 
 export function handleDonation(event: Donation): void {}
 
