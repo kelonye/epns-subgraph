@@ -16,6 +16,8 @@ type Channel @entity {
   startBlock: BigInt!
   updateBlock: BigInt!
   weight: BigInt!
+  indexTimestamp: BigInt!
+  indexBlock: BigInt!
 }
 
 type SubscriptionState @entity {
@@ -23,6 +25,8 @@ type SubscriptionState @entity {
   userAddress: Bytes! # address
   channelAddress: Bytes! # address
   subscribed: Boolean!
+  indexTimestamp: BigInt!
+  indexBlock: BigInt!
 }
 
 type Notification @entity {
@@ -39,4 +43,6 @@ type Notification @entity {
   dataAImg: String
   dataATime: String
   recipients: [Bytes!] # [address]
+  indexTimestamp: BigInt!
+  indexBlock: BigInt!
 }

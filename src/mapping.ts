@@ -25,6 +25,8 @@ import {Channel, SubscriptionState, Notification} from '../generated/schema'
 
 export function handleAddChannel(event: AddChannel): void {
   let channel = new Channel(event.params.channel.toHex())
+  channel.indexTimestamp = event.block.timestamp
+  channel.indexBlock = event.block.number
 
   let result = ipfs.cat(getIpfsId(event.params.identity))!
   if (result) {
@@ -119,6 +121,8 @@ export function handleSubscribe(event: Subscribe): void {
     subscription = new SubscriptionState(subscriptionId)
     subscription.channelAddress = event.params.channel
     subscription.userAddress = event.params.user
+    subscription.indexTimestamp = event.block.timestamp
+    subscription.indexBlock = event.block.number
   }
   subscription.subscribed = true
   subscription.save()
@@ -150,6 +154,8 @@ export function handleUnsubscribe(event: Unsubscribe): void {
     subscription = new SubscriptionState(subscriptionId)
     subscription.channelAddress = event.params.channel
     subscription.userAddress = event.params.user
+    subscription.indexTimestamp = event.block.timestamp
+    subscription.indexBlock = event.block.number
   }
   subscription.subscribed = false
   subscription.save()
@@ -248,6 +254,9 @@ export function handleSendNotification(event: SendNotification): void {
 
   log.warning('found notification of type {} {}', [type, identity.toString()])
 
+  let timestamp = event.block.timestamp
+  let block = event.block.number
+
   if (type.includes('1')) {
     // type === 1 // falsy for some reason
     log.warning('indexing broadcast notification {} {}', [
@@ -287,6 +296,8 @@ export function handleSendNotification(event: SendNotification): void {
               identity.toString(),
             ])
             createNotification(
+              timestamp,
+              block,
               identity,
               channelAddress,
               userAddress,
@@ -308,6 +319,8 @@ export function handleSendNotification(event: SendNotification): void {
       identity.toString(),
     ])
     createNotification(
+      timestamp,
+      block,
       identity,
       channelAddress,
       event.params.recipient,
@@ -323,6 +336,9 @@ export function handleSendNotification(event: SendNotification): void {
 }
 
 function createNotification(
+  timestamp: BigInt,
+  block: BigInt,
+
   identity: Bytes,
   channelAddress: Bytes,
   userAddress: Bytes,
@@ -342,6 +358,9 @@ function createNotification(
       .concat('+')
       .concat(userAddress.toHexString())
   )
+  notification.indexTimestamp = timestamp
+  notification.indexBlock = block
+
   notification.channelAddress = channelAddress
   notification.userAddress = userAddress
 
