@@ -28,7 +28,9 @@ export function handleAddChannel(event: AddChannel): void {
   channel.indexTimestamp = event.block.timestamp
   channel.indexBlock = event.block.number
 
-  let result = ipfs.cat(getIpfsId(event.params.identity))!
+  let identity = event.params.identity
+
+  let result = ipfs.cat(getIpfsId(identity))!
   if (result) {
     let ipfsObject = json.fromBytes(result).toObject()
     channel.name = ipfsObject.get('name').toString()
@@ -36,9 +38,7 @@ export function handleAddChannel(event: AddChannel): void {
     channel.url = ipfsObject.get('url').toString()
     channel.icon = ipfsObject.get('icon').toString()
   } else {
-    log.warning('channel identity not found in ipfs {}', [
-      event.params.identity.toString(),
-    ])
+    log.warning('channel identity not found in ipfs {}', [identity.toString()])
   }
 
   // let contract = Contract.bind(event.address)
@@ -65,6 +65,7 @@ export function handleAddChannel(event: AddChannel): void {
   channel.startBlock = new BigInt(0)
   channel.updateBlock = new BigInt(0)
   channel.weight = new BigInt(0)
+  channel.identity = identity.toString()
 
   channel.save()
 }
@@ -303,6 +304,7 @@ export function handleSendNotification(event: SendNotification): void {
               userAddress,
               title,
               body,
+              type,
               asub,
               amsg,
               acta,
@@ -326,6 +328,7 @@ export function handleSendNotification(event: SendNotification): void {
       event.params.recipient,
       title,
       body,
+      type,
       asub,
       amsg,
       acta,
@@ -344,6 +347,7 @@ function createNotification(
   userAddress: Bytes,
   title: string,
   body: string,
+  type: string,
   asub: string,
   amsg: string,
   acta: string,
@@ -364,13 +368,16 @@ function createNotification(
   notification.channelAddress = channelAddress
   notification.userAddress = userAddress
 
-  notification.notificationTitle = title
-  notification.notificationBody = body
-  notification.dataASub = asub
-  notification.dataAMsg = amsg
-  notification.dataACta = acta
-  notification.dataAImg = aimg
-  notification.dataATime = atime
+  notification.title = title
+  notification.body = body
+  notification.type = type
+  notification.sub = asub
+  notification.msg = amsg
+  notification.cta = acta
+  notification.img = aimg
+  notification.time = atime
+
+  notification.identity = identity.toString()
 
   notification.save()
 }
